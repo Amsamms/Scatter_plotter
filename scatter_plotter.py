@@ -53,7 +53,7 @@ if data is not None:
         date=st.sidebar.selectbox('Choose Date column',df.columns)
         df[date]=pd.to_datetime(df[date])
 
-    choice=st.sidebar.radio('Choose one of the following options :',['One chart: Column on X axis Vs Column on Y axis','One chart: Column on X axis Vs Column on Y axis Vs 2ndry  Y axis','One chart-Auto-Scale : Column on X axis Vs many auto re-scaled on Y ','Many charts: Fixed Column on X axis Vs Many Columns on Y axis','Many charts : Fixed column on Y axis Vs all other columns on X axis'])
+    choice=st.sidebar.radio('Choose one of the following options :',['One chart: Column on X axis Vs Column on Y axis','One chart: Column on X axis Vs Column on Y axis Vs 2ndry  Y axis','One chart-Auto-Scale : Column on X axis Vs many auto re-scaled on Y ','Many charts: Fixed Column on X axis Vs Many Columns on Y axis','Many charts : Fixed column on X axis Vs all other columns on Y axis'])
 
 
     if choice=='One chart: Column on X axis Vs Column on Y axis':
@@ -149,8 +149,8 @@ if data is not None:
                 st.write(f'The column {column} can not be plotted, kindly review its data')
                 continue
 
-    if choice=='Many charts : Fixed column on Y axis Vs all other columns on X axis':
-        X=st.sidebar.selectbox('Choose the fixed column on Y',df.columns)
+    if choice=='Many charts : Fixed column on X axis Vs all other columns on Y axis':
+        X=st.sidebar.selectbox('Choose the fixed column on X',df.columns)
         if df[X].dtype== 'datetime64[ns]' and k==True :
             pass
         else:
@@ -162,8 +162,8 @@ if data is not None:
                 else:
                     df[column]=pd.to_numeric(df[column],errors='coerce')
                 fig = go.Figure()
-                fig.add_trace(go.Scatter(x=df[column], y=df[X],mode='markers'))
-                fig.update_layout(xaxis_title=column, yaxis_title=X)
+                fig.add_trace(go.Scatter(x=df[X], y=df[column],mode='markers'))
+                fig.update_layout(xaxis_title=X, yaxis_title=column)
                 st.plotly_chart(fig)
             except:
                 st.write(f'The column {column} can not be plotted, kindly review its data')
