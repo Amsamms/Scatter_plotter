@@ -25,7 +25,7 @@ data= st.sidebar.file_uploader("Upload your excel/csv file here",type=['csv', 'x
 
 if data is not None:
     try:
-        df_raw = pd.read_csv(data)
+        df_raw = pd.read_csv(data,encoding_errors='ignore')
     except:
         pass
     try:
