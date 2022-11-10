@@ -32,6 +32,10 @@ if data is not None:
         df_raw = pd.read_excel(data)
     except:
         pass
+    try:
+        df_raw=pd.read_excel(data,engine='openpyxl')
+    except:
+        pass
 else:
     st.sidebar.write('*Kindly upload valid excel or csv data with one sheet and columns names are in the first raw')
     
