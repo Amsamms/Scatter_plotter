@@ -15,12 +15,21 @@ st.title('Simple scatter plotter app')
 st.markdown('<p style="background-color:#f8f4f4;color:#6858c4;font-size:24px;border-radius:2%;">Just upload excel file and see great interactive plots</p>', unsafe_allow_html=True)
 st.header('=================================')
 
+tab1,tab2= st.tabs(["How to run the app", " Video description of the app"])
 
-st.header("How to run the app")
-st.markdown("* ##### Upload excel or csv file from the button on the left side bar")
-st.markdown("* ##### Click Date checkbox if the uploaded data contains DATE")
-st.markdown("* ##### Choose one of the options at the left side bar")
-st.markdown("* ##### All plots are shown  in the middle")
+with tab1:
+    st.header("How to run the app")
+    st.markdown("* ##### Upload excel or csv file from the button on the left side bar")
+    st.markdown("* ##### Click Date checkbox if the uploaded data contains DATE")
+    st.markdown("* ##### Choose one of the options at the left side bar")
+    st.markdown("* ##### All plots are shown  in the middle")
+
+with tab2:
+    st.markdown(" Check the video below")
+    st.video('https://youtu.be/W8CR1zD15l0')
+
+
+
 
 data= st.sidebar.file_uploader("Upload your excel/csv file here",type=['csv', 'xls', 'xlsx'],key='1')
 
