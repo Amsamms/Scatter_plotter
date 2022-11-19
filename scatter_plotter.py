@@ -175,7 +175,7 @@ if data is not None:
                 pass
             else:
                 df[X]=pd.to_numeric(df[X],errors='coerce')
-            excepted_columns= st.sidebar.multiselect('Choose the list of columns to be plotted on Y',df.columns)    
+            excepted_columns= st.sidebar.multiselect('Choose the list of columns to be execluded, all other columns will be plotted on Y',df.columns)    
             columnss= df.columns.difference([excepted_columns])
             fig = go.Figure()
             for column in columnss:
