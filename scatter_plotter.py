@@ -67,8 +67,8 @@ if data is not None:
         date=st.sidebar.selectbox('Choose Date column',df.columns)
         df[date]=pd.to_datetime(df[date])
 
-    choice=st.sidebar.radio('Choose one of the following options :',['One chart: Column on X axis Vs Column on Y axis','One chart: Column on X axis Vs Column on Y axis Vs 2ndry  Y axis','One chart-Auto-Scale : Column on X axis Vs many auto re-scaled on Y ','Many charts: Fixed Column on X axis Vs Many Columns on Y axis','Many charts : Fixed column on X axis Vs all other columns on Y axis'])
-
+    choice=st.sidebar.radio('Choose one of the following options :',['One chart: Column on X axis Vs Column on Y axis','One chart: Column on X axis Vs Column on Y axis Vs 2ndry  Y axis','One chart-Auto-Rescale : Column on X axis Vs many auto re-scaled on Y ','Many charts: Fixed Column on X axis Vs Many Columns on Y axis','Many charts : Fixed column on X axis Vs all other columns on Y axis'])
+    st.sidebar.write('======================================')
     if st.session_state['date_status']:
         style='lines+markers'
     else:
@@ -113,34 +113,90 @@ if data is not None:
         fig.update_yaxes(title_text=Y_2, secondary_y=True) # Set name for secondry y axis and range
         st.plotly_chart(fig)
 
-    if choice=='One chart-Auto-Scale : Column on X axis Vs many auto re-scaled on Y ':
+    if choice=='One chart-Auto-Rescale : Column on X axis Vs many auto re-scaled on Y ':
+        auto_scale=st.sidebar.radio(label="choose",options=['All columns included','All columns included except some','Manually choose included columns'],index=2,key='auto_scale')
         min = st.sidebar.number_input('input minimum number for Y re-scaling')
         max = st.sidebar.number_input('input maximum number for Y re-scaling')
-        X=st.sidebar.selectbox('Choose  X axis',df.columns)
-        if df[X].dtype== 'datetime64[ns]' and k==True :
-            pass
-        else:
-            df[X]=pd.to_numeric(df[X],errors='coerce')
-        columnss= st.sidebar.multiselect('Choose the list of columns to be plotted on Y',df.columns)
-        fig = go.Figure()
-        for column in columnss:
+        if auto_scale=='Manually choose included columns':            
+            X=st.sidebar.selectbox('Choose  X axis',df.columns)
+            if df[X].dtype== 'datetime64[ns]' and k==True :
+                pass
+            else:
+                df[X]=pd.to_numeric(df[X],errors='coerce')
+            columnss= st.sidebar.multiselect('Choose the list of columns to be plotted on Y',df.columns)
+            fig = go.Figure()
+            for column in columnss:
+                try:
+                    if df[column].dtype=='datetime64[ns]' and k==True:
+                        pass
+                    else:
+                        df[column]=pd.to_numeric(df[column],errors='coerce')
+                except:
+                    st.write(f'The column {column} can not be plotted, kindly review its data')
+                    continue
             try:
-                if df[column].dtype=='datetime64[ns]' and k==True:
-                    pass
-                else:
-                 df[column]=pd.to_numeric(df[column],errors='coerce')
+                scaler = MinMaxScaler((min,max))
+                scaler.fit(df[columnss])
+                df_transformed=pd.DataFrame(scaler.transform(df[columnss]),columns=columnss)
+                for column in df_transformed.columns:
+                    fig.add_trace(go.Scatter(x=df[X], y=df_transformed[column],mode=style, name=column))
+                st.plotly_chart(fig)
             except:
-                st.write(f'The column {column} can not be plotted, kindly review its data')
-                continue
-        try:
-            scaler = MinMaxScaler((min,max))
-            scaler.fit(df[columnss])
-            df_transformed=pd.DataFrame(scaler.transform(df[columnss]),columns=columnss)
-            for column in df_transformed.columns:
-                fig.add_trace(go.Scatter(x=df[X], y=df_transformed[column],mode=style, name=column))
-            st.plotly_chart(fig)
-        except:
-            pass
+                pass
+        elif auto_scale=='All columns included':
+            X=st.sidebar.selectbox('Choose  X axis',df.columns)
+            if df[X].dtype== 'datetime64[ns]' and k==True :
+                pass
+            else:
+                df[X]=pd.to_numeric(df[X],errors='coerce')
+            columnss= df.columns.difference([X])
+            fig = go.Figure()
+            for column in columnss:
+                try:
+                    if df[column].dtype=='datetime64[ns]' and k==True:
+                        pass
+                    else:
+                        df[column]=pd.to_numeric(df[column],errors='coerce')
+                except:
+                    st.write(f'The column {column} can not be plotted, kindly review its data')
+                    continue
+            try:
+                scaler = MinMaxScaler((min,max))
+                scaler.fit(df[columnss])
+                df_transformed=pd.DataFrame(scaler.transform(df[columnss]),columns=columnss)
+                for column in df_transformed.columns:
+                    fig.add_trace(go.Scatter(x=df[X], y=df_transformed[column],mode=style, name=column))
+                st.plotly_chart(fig)
+            except:
+                pass
+        elif auto_scale=='All columns included except some':
+            X=st.sidebar.selectbox('Choose  X axis',df.columns)
+            if df[X].dtype== 'datetime64[ns]' and k==True :
+                pass
+            else:
+                df[X]=pd.to_numeric(df[X],errors='coerce')
+            excepted_columns= st.sidebar.multiselect('Choose the list of columns to be plotted on Y',df.columns)    
+            columnss= df.columns.difference([excepted_columns])
+            fig = go.Figure()
+            for column in columnss:
+                try:
+                    if df[column].dtype=='datetime64[ns]' and k==True:
+                        pass
+                    else:
+                        df[column]=pd.to_numeric(df[column],errors='coerce')
+                except:
+                    st.write(f'The column {column} can not be plotted, kindly review its data')
+                    continue
+            try:
+                scaler = MinMaxScaler((min,max))
+                scaler.fit(df[columnss])
+                df_transformed=pd.DataFrame(scaler.transform(df[columnss]),columns=columnss)
+                for column in df_transformed.columns:
+                    fig.add_trace(go.Scatter(x=df[X], y=df_transformed[column],mode=style, name=column))
+                st.plotly_chart(fig)
+            except:
+                pass
+
 
             
 
