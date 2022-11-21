@@ -4,6 +4,7 @@ import pandas as pd
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import plotly.express as px
+import plotly.figure_factory as ff
 from sklearn.preprocessing import MinMaxScaler
 import openpyxl
 import streamlit as st
@@ -67,7 +68,7 @@ if data is not None:
         date=st.sidebar.selectbox('Choose Date column',df.columns)
         df[date]=pd.to_datetime(df[date])
 
-    choice=st.sidebar.radio('Choose one of the following options :',['One chart: Column on X axis Vs Column on Y axis','One chart: Column on X axis Vs Column on Y axis Vs 2ndry  Y axis','One chart-Auto-Rescale : Column on X axis Vs many auto re-scaled on Y ','Many charts: Fixed Column on X axis Vs Many Columns on Y axis','Many charts : Fixed column on X axis Vs all other columns on Y axis'])
+    choice=st.sidebar.radio('Choose one of the following options :',['One chart: Column on X axis Vs Column on Y axis','One chart: Column on X axis Vs Column on Y axis Vs 2ndry  Y axis','One chart-Auto-Rescale : Column on X axis Vs many auto re-scaled on Y ','Many charts: Fixed Column on X axis Vs Many Columns on Y axis','Many charts : Fixed column on X axis Vs all other columns on Y axis','Correlations'])
     st.sidebar.write('======================================')
     if st.session_state['date_status']:
         style='lines+markers'
@@ -242,6 +243,50 @@ if data is not None:
             except:
                 st.write(f'The column {column} can not be plotted, kindly review its data')
                 continue
+
+    if choice=='Correlations':
+        correlations=st.sidebar.radio(label="choose",options=['All columns included','All columns included except some','Manually choose included columns'],index=2,key='correlations')
+        if correlations=='Manually choose included columns':            
+            columnss= st.sidebar.multiselect('Choose the list of columns to be plotted on Y',df.columns)
+            corr=df[columnss].corr()
+            st.write('********************************************')
+            st.write('correlation Matrix :')
+            st.write(corr)
+            fig = go.Figure()
+            fig.add_trace(go.Heatmap(x = corr.columns,y = corr.index,z = np.array(corr)))
+            #x = list(corr.columns)
+            #y = list(corr.index)
+            #z = np.array(corr)
+            #fig = ff.create_annotated_heatmap(z,x = x,y = y ,annotation_text = np.around(z, decimals=2),hoverinfo='z',colorscale='Viridis')
+            st.plotly_chart(fig)
+
+
+        elif correlations=='All columns included':
+            corr=df.corr()
+            st.write('********************************************')
+            st.write('correlation Matrix :')
+            st.write(corr)
+            fig = go.Figure()
+            fig.add_trace(go.Heatmap(x = corr.columns,y = corr.index,z = np.array(corr)))
+            st.plotly_chart(fig)
+            #x = list(corr.columns)
+            #y = list(corr.index)
+            #z = np.array(corr)
+            #fig = ff.create_annotated_heatmap(z,x = x,y = y ,annotation_text = np.around(z, decimals=2),hoverinfo='z',colorscale='Viridis')
+            
+
+        elif correlations=='All columns included except some':
+            excepted_columns= st.sidebar.multiselect('Choose the list of columns to be execluded, all other columns will be plotted on Y',df.columns)    
+            columnss= df.drop(excepted_columns,axis=1).columns
+            corr=df[columnss].corr()
+            st.write('********************************************')
+            st.write('correlation Matrix :')
+            st.write(corr)
+            fig = go.Figure()
+            fig.add_trace(go.Heatmap(x = corr.columns,y = corr.index,z = np.array(corr)))
+            st.plotly_chart(fig)
+
+
     st.sidebar.write('======================================')
     st.sidebar.write('======================================')
     st.sidebar.write('======================================')
