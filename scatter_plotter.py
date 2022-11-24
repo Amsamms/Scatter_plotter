@@ -40,6 +40,11 @@ if data is not None:
     except:
         pass
     try:
+        df_raw = pd.read_csv(data)
+    except:
+        pass
+
+    try:
         df_raw = pd.read_excel(data)
     except:
         pass
