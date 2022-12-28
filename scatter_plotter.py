@@ -72,6 +72,7 @@ if data is not None:
     if k :
         date=st.sidebar.selectbox('Choose Date column',df.columns)
         df[date]=pd.to_datetime(df[date])
+    gl=st.sidebar.checkbox('Check this box if the data contains large number of points',key='gl')
 
     choice=st.sidebar.radio('Choose one of the following options :',['One chart: Column on X axis Vs Column on Y axis','One chart: Column on X axis Vs Column on Y axis Vs 2ndry  Y axis','One chart-Auto-Rescale : Column on X axis Vs many auto re-scaled on Y ','Many charts: Fixed Column on X axis Vs Many Columns on Y axis','Many charts : Fixed column on X axis Vs all other columns on Y axis','Correlations'])
     st.sidebar.write('======================================')
@@ -92,32 +93,81 @@ if data is not None:
         else:
             df[Y]=pd.to_numeric(df[Y],errors='coerce')
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=df[X], y=df[Y],mode=style))
+        if gl==True:
+            fig.add_trace(go.Scattergl(x=df[X], y=df[Y],mode=style))
+        else:
+            fig.add_trace(go.Scatter(x=df[X], y=df[Y],mode=style))
         fig.update_layout(xaxis_title=X, yaxis_title=Y)
         st.plotly_chart(fig)
 
     if choice=='One chart: Column on X axis Vs Column on Y axis Vs 2ndry  Y axis':
-        X=st.sidebar.selectbox('Choose X Axis',df.columns)
-        Y_1=st.sidebar.selectbox('Choose primary Y Axis',df.columns)
-        Y_2=st.sidebar.selectbox('Choose 2ndry Y Axis',df.columns) 
-        if df[X].dtype== 'datetime64[ns]' and k==True :
-            pass
+        choice_new=st.sidebar.radio(label="choose",options=['Y axes has one variable','Y axes has many variables'],key='choose_new')
+        if choice_new=='Y axes has one variable':
+            X=st.sidebar.selectbox('Choose X Axis',df.columns)
+            Y_1=st.sidebar.selectbox('Choose primary Y Axis',df.columns)
+            Y_2=st.sidebar.selectbox('Choose 2ndry Y Axis',df.columns) 
+            if df[X].dtype== 'datetime64[ns]' and k==True :
+                pass
+            else:
+                df[X]=pd.to_numeric(df[X],errors='coerce')
+            if df[Y_1].dtype =='datetime64[ns]' and k==True:
+                pass
+            else:
+                df[Y_1]=pd.to_numeric(df[Y_1],errors='coerce') 
+            if df[Y_2].dtype =='datetime64[ns]' and k==True:
+                pass
+            else:
+                df[Y_2]=pd.to_numeric(df[Y_2],errors='coerce')
+            fig = make_subplots(specs=[[{"secondary_y": True}]])
+            if gl==True:
+                fig.add_trace(go.Scattergl(x=df[X], y=df[Y_1],mode=style, name=Y_1)) # 1st y axis
+                fig.add_trace(go.Scattergl(x=df[X], y=(df[Y_2]),mode=style, name=Y_2), secondary_y=True) # 2nd y axis
+            else:
+                fig.add_trace(go.Scatter(x=df[X], y=df[Y_1],mode=style, name=Y_1)) # 1st y axis
+                fig.add_trace(go.Scatter(x=df[X], y=(df[Y_2]),mode=style, name=Y_2), secondary_y=True) # 2nd y axis               
+            fig.update_layout(xaxis_title=X, yaxis_title=Y_1) # set name for X axis & primary Y axis
+            fig.update_yaxes(title_text=Y_2, secondary_y=True) # Set name for secondry y axis and range
+            st.plotly_chart(fig)
         else:
-            df[X]=pd.to_numeric(df[X],errors='coerce')
-        if df[Y_1].dtype =='datetime64[ns]' and k==True:
-            pass
-        else:
-            df[Y_1]=pd.to_numeric(df[Y_1],errors='coerce') 
-        if df[Y_2].dtype =='datetime64[ns]' and k==True:
-            pass
-        else:
-            df[Y_2]=pd.to_numeric(df[Y_2],errors='coerce')
-        fig = make_subplots(specs=[[{"secondary_y": True}]])
-        fig.add_trace(go.Scatter(x=df[X], y=df[Y_1],mode=style, name=Y_1)) # 1st y axis
-        fig.add_trace(go.Scatter(x=df[X], y=(df[Y_2]),mode=style, name=Y_2), secondary_y=True) # 2nd y axis
-        fig.update_layout(xaxis_title=X, yaxis_title=Y_1) # set name for X axis & primary Y axis
-        fig.update_yaxes(title_text=Y_2, secondary_y=True) # Set name for secondry y axis and range
-        st.plotly_chart(fig)
+            X=st.sidebar.selectbox('Choose X Axis',df.columns)
+            Y_1=st.sidebar.multiselect('Choose primary Y Axis',df.columns)
+            Y_2=st.sidebar.multiselect('Choose 2ndry Y Axis',df.columns) 
+            if df[X].dtype== 'datetime64[ns]' and k==True :
+                pass
+            else:
+                df[X]=pd.to_numeric(df[X],errors='coerce')
+            for column in df[Y_1].columns:    
+                if df[column].dtype =='datetime64[ns]' and k==True:
+                    pass
+                else:
+                    df[column]=pd.to_numeric(df[column],errors='coerce') 
+            for column in df[Y_2].columns:    
+                if df[column].dtype =='datetime64[ns]' and k==True:
+                    pass
+                else:
+                    df[column]=pd.to_numeric(df[column],errors='coerce') 
+            fig = make_subplots(specs=[[{"secondary_y": True}]])
+            try:
+                for column in df[Y_1].columns:
+                    if gl==True:
+                        fig.add_trace(go.Scattergl(x=df[X], y=df[column],mode=style, name=column)) # 1st y axis
+                    else:    
+                        fig.add_trace(go.Scatter(x=df[X], y=df[column],mode=style, name=column)) # 1st y axis
+            except:
+                pass
+            try:
+                for column in df[Y_2].columns:
+                    if gl==True:
+                        fig.add_trace(go.Scattergl(x=df[X], y=(df[column]),mode=style, name=column), secondary_y=True) # 2nd y axis
+                    else:                     
+                        fig.add_trace(go.Scatter(x=df[X], y=(df[column]),mode=style, name=column), secondary_y=True) # 2nd y axis
+            except:
+                pass
+            #fig.update_layout(xaxis_title=X, yaxis_title=Y_1) # set name for X axis & primary Y axis
+            #fig.update_yaxes(title_text=Y_2, secondary_y=True) # Set name for secondry y axis and range
+            st.plotly_chart(fig)
+
+
 
     if choice=='One chart-Auto-Rescale : Column on X axis Vs many auto re-scaled on Y ':
         auto_scale=st.sidebar.radio(label="choose",options=['All columns included','All columns included except some','Manually choose included columns'],index=2,key='auto_scale')
@@ -145,7 +195,10 @@ if data is not None:
                 scaler.fit(df[columnss])
                 df_transformed=pd.DataFrame(scaler.transform(df[columnss]),columns=columnss)
                 for column in df_transformed.columns:
-                    fig.add_trace(go.Scatter(x=df[X], y=df_transformed[column],mode=style, name=column))
+                    if gl==True:
+                        fig.add_trace(go.Scattergl(x=df[X], y=df_transformed[column],mode=style, name=column))
+                    else:
+                        fig.add_trace(go.Scatter(x=df[X], y=df_transformed[column],mode=style, name=column))
                 st.plotly_chart(fig)
             except:
                 pass
@@ -171,7 +224,10 @@ if data is not None:
                 scaler.fit(df[columnss])
                 df_transformed=pd.DataFrame(scaler.transform(df[columnss]),columns=columnss)
                 for column in df_transformed.columns:
-                    fig.add_trace(go.Scatter(x=df[X], y=df_transformed[column],mode=style, name=column))
+                    if gl==True:
+                        fig.add_trace(go.Scattergl(x=df[X], y=df_transformed[column],mode=style, name=column))
+                    else:
+                        fig.add_trace(go.Scatter(x=df[X], y=df_transformed[column],mode=style, name=column))
                 st.plotly_chart(fig)
             except:
                 pass
@@ -198,7 +254,10 @@ if data is not None:
                 scaler.fit(df[columnss])
                 df_transformed=pd.DataFrame(scaler.transform(df[columnss]),columns=columnss)
                 for column in df_transformed.columns:
-                    fig.add_trace(go.Scatter(x=df[X], y=df_transformed[column],mode=style, name=column))
+                    if gl==True:
+                       fig.add_trace(go.Scattergl(x=df[X], y=df_transformed[column],mode=style, name=column))
+                    else:
+                       fig.add_trace(go.Scatter(x=df[X], y=df_transformed[column],mode=style, name=column))
                 st.plotly_chart(fig)
             except:
                 pass
@@ -222,7 +281,10 @@ if data is not None:
                 else:
                     df[column]=pd.to_numeric(df[column],errors='coerce')
                 fig = go.Figure()
-                fig.add_trace(go.Scatter(x=df[X], y=df[column],mode=style))
+                if gl==True:
+                   fig.add_trace(go.Scattergl(x=df[X], y=df[column],mode=style))
+                else:    
+                   fig.add_trace(go.Scatter(x=df[X], y=df[column],mode=style))
                 fig.update_layout(xaxis_title=X, yaxis_title=column)
                 st.plotly_chart(fig)
             except:
@@ -242,7 +304,10 @@ if data is not None:
                 else:
                     df[column]=pd.to_numeric(df[column],errors='coerce')
                 fig = go.Figure()
-                fig.add_trace(go.Scatter(x=df[X], y=df[column],mode=style))
+                if gl==True:
+                    fig.add_trace(go.Scattergl(x=df[X], y=df[column],mode=style))
+                else:
+                    fig.add_trace(go.Scatter(x=df[X], y=df[column],mode=style))
                 fig.update_layout(xaxis_title=X, yaxis_title=column)
                 st.plotly_chart(fig)
             except:
