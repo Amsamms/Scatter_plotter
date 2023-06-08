@@ -8,6 +8,7 @@ import plotly.figure_factory as ff
 from sklearn.preprocessing import MinMaxScaler
 import openpyxl
 import streamlit as st
+from scipy import stats
 
 
 st.set_page_config("Simple scatter plotter",":chart_with_downwards_trend:")#,layout="wide",initial_sidebar_state="expanded")
@@ -74,6 +75,28 @@ if data is not None:
         df[date]=pd.to_datetime(df[date])
     gl=st.sidebar.checkbox('Check this box if the data contains large number of points',key='gl')
     st.sidebar.write('======================================')
+    
+    #outliers detection and removal
+    if st.checkbox('Remove outliers'):
+        st.markdown('#### Standard Deviation')
+        slider_std_dev = st.slider('Choose the standard deviation', 1, 10, 2)
+        
+        # Identify date columns
+        date_columns = df.select_dtypes(include=[np.datetime64]).columns.tolist()
+
+        # List of all columns
+        all_columns = df.columns.tolist()
+
+        # Columns to convert - this will be all columns except date columns
+        columns_to_convert = list(set(all_columns) - set(date_columns))
+
+        # Convert columns to numeric, errors='coerce' will turn non-numeric values into NaN
+        for column in columns_to_convert:
+            df[column] = pd.to_numeric(df[column], errors='coerce')
+
+        # Here your df should have numeric columns and you can remove outliers based on z score.
+        df = df[(np.abs(stats.zscore(df)) < slider_std_dev).all(axis=1)]
+
 
     choice=st.sidebar.radio('Choose one of the following options :',['One chart','One Chart with re-scaling','Many charts','Correlations'])
     st.sidebar.write('======================================')
