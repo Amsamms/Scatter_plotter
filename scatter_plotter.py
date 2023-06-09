@@ -80,19 +80,10 @@ if data is not None:
     if st.checkbox('Remove outliers'):
         st.markdown('#### Standard Deviation')
         try:
-            # Identify date columns
-            date_columns = df.select_dtypes(include=[np.datetime64]).columns.tolist()
-            # List of all columns
-            all_columns = df.columns.tolist()
-            # Columns to convert - this will be all columns except date columns
-            columns_to_convert = list(set(all_columns) - set(date_columns))
-            # Convert columns to numeric, errors='coerce' will turn non-numeric values into NaN
-            for column in columns_to_convert:
+            df_new=df.copy()
+            for column in df_new.columns:
                 # Check if the column is numeric
-                if df[column].dtype.kind not in 'biufc':
-                   st.write(f"Non-numeric column: {column}")
-                # Then convert to numeric
-                df[column] = pd.to_numeric(df[column], errors='coerce')
+                df_new[column] = pd.to_numeric(df_new[column], errors='coerce')
             #outlier function that is used in machine learning app   
             outlier_limit=st.slider('Number of Standard deviations data will be filtered upon',1.0,10.0,4.0,0.2)
             st.write(f'data initial raws are {df.shape[0]}')
@@ -104,7 +95,8 @@ if data is not None:
                 filtered_entries = (abs_z_scores < a).all(axis=1)
                 df_without_outliers = df[filtered_entries]
                 return df_without_outliers
-            df = df_without_outliers(df, a= outlier_limit)
+            df_new = df_without_outliers(df_new, a= outlier_limit)
+            df=df.loc[df_new.index]
             st.write(f'data new raws are {df.shape[0]}')
         except Exception as e:
             st.write(f"An error occurred: {type(e).__name__}")
