@@ -8,7 +8,7 @@ import plotly.figure_factory as ff
 from sklearn.preprocessing import MinMaxScaler
 import openpyxl
 import streamlit as st
-from scipy import stats
+import scipy.stats as stats
 
 
 st.set_page_config("Simple scatter plotter",":chart_with_downwards_trend:")#,layout="wide",initial_sidebar_state="expanded")
