@@ -102,10 +102,12 @@ if data is not None:
                 return df_without_outliers
             df = df_without_outliers(df, a= outlier_limit)
             st.write(f'data new raws are {df.shape[0]}')
-        except:
+        except Exception as e:
+            print(f"An error occurred: {type(e).__name__}")
+            print(f"Error message: {e}")
             st.write('dataset could not be outliers removed')
             pass
-
+        
     choice=st.sidebar.radio('Choose one of the following options :',['One chart','One Chart with re-scaling','Many charts','Correlations'])
     st.sidebar.write('======================================')
     if st.session_state['date_status']:
