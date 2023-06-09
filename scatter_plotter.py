@@ -91,7 +91,7 @@ if data is not None:
                df[column] = pd.to_numeric(df[column], errors='coerce')
             #outlier function that is used in machine learning app   
             outlier_limit=st.slider('Number of Standard deviations data will be filtered upon',1.0,10.0,4.0,0.2)
-            st.write(f'Data reduced from {df.shape[0]} raws')
+            st.write(f'data initial raws are {df.shape[0]}')
             def df_without_outliers (data,a=4.0):
                 df=data.copy()    
                 z_scores = stats.zscore(df[df.describe().columns],nan_policy='omit')
@@ -101,7 +101,7 @@ if data is not None:
                 df_without_outliers = df[filtered_entries]
                 return df_without_outliers
             df = df_without_outliers(df, a= outlier_limit)
-            st.write(f'to {df.shape[0]} raws')
+            st.write(f'data new raws are {df.shape[0]}')
         except:
             st.write('dataset could not be outliers removed')
             pass
