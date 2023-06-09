@@ -79,24 +79,32 @@ if data is not None:
     #outliers detection and removal
     if st.checkbox('Remove outliers'):
         st.markdown('#### Standard Deviation')
-        slider_std_dev = st.slider('Choose the standard deviation', 1, 10, 2)
-        
-        # Identify date columns
-        date_columns = df.select_dtypes(include=[np.datetime64]).columns.tolist()
-
-        # List of all columns
-        all_columns = df.columns.tolist()
-
-        # Columns to convert - this will be all columns except date columns
-        columns_to_convert = list(set(all_columns) - set(date_columns))
-
-        # Convert columns to numeric, errors='coerce' will turn non-numeric values into NaN
-        for column in columns_to_convert:
-            df[column] = pd.to_numeric(df[column], errors='coerce')
-
-        # Here your df should have numeric columns and you can remove outliers based on z score.
-        df = df[(np.abs(stats.zscore(df)) < slider_std_dev).all(axis=1)]
-
+        try:
+            # Identify date columns
+            date_columns = df.select_dtypes(include=[np.datetime64]).columns.tolist()
+            # List of all columns
+            all_columns = df.columns.tolist()
+            # Columns to convert - this will be all columns except date columns
+            columns_to_convert = list(set(all_columns) - set(date_columns))
+            # Convert columns to numeric, errors='coerce' will turn non-numeric values into NaN
+            for column in columns_to_convert:
+               df[column] = pd.to_numeric(df[column], errors='coerce')
+            #outlier function that is used in machine learning app   
+            outlier_limit=st.slider('Number of Standard deviations data will be filtered upon',1.0,10.0,4.0,0.2)
+            st.write(f'Data reduced from {df.shape[0]} raws')
+            def df_without_outliers (data,a=4.0):
+                df=data.copy()    
+                z_scores = stats.zscore(df[df.describe().columns],nan_policy='omit')
+                z_scores.fillna(0,inplace=True)   # in case one column is filled with nan values
+                abs_z_scores = np.abs(z_scores)
+                filtered_entries = (abs_z_scores < a).all(axis=1)
+                df_without_outliers = df[filtered_entries]
+                return df_without_outliers
+            df = df_without_outliers(df, a= outlier_limit)
+            st.write(f'to {df.shape[0]} raws')
+        except:
+            st.write('dataset could not be outliers removed')
+            pass
 
     choice=st.sidebar.radio('Choose one of the following options :',['One chart','One Chart with re-scaling','Many charts','Correlations'])
     st.sidebar.write('======================================')
