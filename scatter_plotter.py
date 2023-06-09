@@ -88,7 +88,11 @@ if data is not None:
             columns_to_convert = list(set(all_columns) - set(date_columns))
             # Convert columns to numeric, errors='coerce' will turn non-numeric values into NaN
             for column in columns_to_convert:
-               df[column] = pd.to_numeric(df[column], errors='coerce')
+                # Check if the column is numeric
+                if df[column].dtype.kind not in 'biufc':
+                   st.write(f"Non-numeric column: {column}")
+                # Then convert to numeric
+                df[column] = pd.to_numeric(df[column], errors='coerce')
             #outlier function that is used in machine learning app   
             outlier_limit=st.slider('Number of Standard deviations data will be filtered upon',1.0,10.0,4.0,0.2)
             st.write(f'data initial raws are {df.shape[0]}')
