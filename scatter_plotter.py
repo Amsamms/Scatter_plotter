@@ -103,8 +103,8 @@ if data is not None:
             df = df_without_outliers(df, a= outlier_limit)
             st.write(f'data new raws are {df.shape[0]}')
         except Exception as e:
-            print(f"An error occurred: {type(e).__name__}")
-            print(f"Error message: {e}")
+            st.write(f"An error occurred: {type(e).__name__}")
+            st.write(f"Error message: {e}")
             st.write('dataset could not be outliers removed')
             pass
         
