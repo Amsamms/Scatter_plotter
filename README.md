@@ -11,7 +11,9 @@ This is a Streamlit application that allows you to create interactive scatter pl
 - **Rescaling**: When creating a chart with rescaling, you can manually specify the minimum and maximum numbers for Y rescaling.
 - **Date support**: If your data contains a DATE column, the app can handle it properly.
 
-## How to Run the App
+## you can run the app as a web-app here [https://amsamms-scatter-plotter-scatter-plotter-f4ojyj.streamlit.app/]
+
+## How to Run the App locally
 
 1. Install Streamlit using pip:
 \```sh
