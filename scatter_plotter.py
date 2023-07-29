@@ -17,16 +17,31 @@ st.title('Simple scatter plotter app')
 st.markdown('<p style="background-color:#f8f4f4;color:#6858c4;font-size:24px;border-radius:2%;">Just upload excel file and see great interactive plots</p>', unsafe_allow_html=True)
 st.header('=================================')
 
-tab1,tab2= st.tabs(["How to run the app", " Video description of the app"])
+tab1,tab2,tab3= st.tabs(["main app","How to run the app", " Video description of the app"])
 
 with tab1:
-    st.header("How to run the app")
-    st.markdown("* ##### Upload excel or csv file from the button on the left side bar")
-    st.markdown("* ##### Click Date checkbox if the uploaded data contains DATE")
-    st.markdown("* ##### Choose one of the options at the left side bar")
-    st.markdown("* ##### All plots are shown  in the middle")
+    st.header("Display Area")
 
+    
 with tab2:
+    st.header("How to use")
+    st.markdown(
+        """
+        1. Start by uploading an Excel or CSV file. This can be done through the 'Upload your excel/csv file here' button located on the left sidebar. Ensure that your file contains a single sheet and the column names are defined in the first row.
+        2. If your data contains a 'DATE' column, make sure to check the 'Check this box if the data contains a DATE column' checkbox on the left sidebar.
+        3. Depending on your needs, you can choose one of the following options from the left sidebar:
+            - One chart: This option allows you to plot multiple series on a single chart. You can specify the series for the primary and secondary Y axes.
+            - One Chart with re-scaling: This option also plots multiple series on a single chart, but with re-scaling of data for better comparison.
+            - Many charts: This option creates individual charts for each series.
+            - Correlations: This option allows you to create a correlation matrix and plot a heatmap of the correlations.
+        4. The generated plots will be displayed in the middle of the screen. If the 'Remove outliers' checkbox is selected, the application will remove outliers from the data before plotting. The threshold for outlier removal can be adjusted using the slider.
+        5. If your data contains a large number of points, check the 'Check this box if the data contains a large number of points' checkbox for better performance.
+        """
+    )
+    st.write(' Kindly note that all cells that are not numbers will be converted to empty cells')
+    
+
+with tab3:
     st.markdown(" Check the video below")
     st.video('https://youtu.be/W8CR1zD15l0')
 
@@ -60,7 +75,7 @@ try:
     st.dataframe(df_raw)
 except:
     pass
-st.write(' Kindly note that all cells that are not numbers will be converted to empty cells')
+
 try:
     df=df_raw.copy()
 except:
