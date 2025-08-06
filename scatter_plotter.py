@@ -396,9 +396,16 @@ if data is not None:
         if corr.empty:
             st.error("No numeric columns found for correlation analysis.")
         else:
-            # User inputs
-            selected_column = st.sidebar.selectbox('Choose the main column for correlation analysis:', df_numeric.columns)
+            # User inputs - X axis can be from original df (including dates), correlation analysis from numeric df
+            X_corr = st.sidebar.selectbox('Choose X Axis for correlation plots:', df.columns)
+            selected_column = st.sidebar.selectbox('Choose the main column for correlation analysis:', corr.columns)
             num_correlations = st.sidebar.slider('Number of top correlations to show:', 1, min(50, len(corr.columns)-1), 10)
+            
+            # Handle X axis data type conversion (from original df)
+            if df[X_corr].dtype == 'datetime64[ns]' and k==True:
+                x_data = df[X_corr]
+            else:
+                x_data = pd.to_numeric(df[X_corr], errors='coerce')
             
             if selected_column in corr.columns:
                 # Find top correlations (excluding the column itself)
@@ -409,23 +416,23 @@ if data is not None:
                 st.write(f"**Top {num_correlations} correlations for '{selected_column}':**")
                 st.dataframe(top_correlations.to_frame(name='Correlation'))
                 
-                # Create individual plots
+                # Create individual plots using original df for plotting
                 for i, (corr_column, corr_value) in enumerate(top_correlations.items()):
                     fig = make_subplots(specs=[[{"secondary_y": True}]])
                     
-                    # Add main column (primary y-axis)
+                    # Add main column (primary y-axis) - from original df
                     if gl==True:
                         fig.add_trace(go.Scattergl(
-                            x=df[X] if 'X' in locals() and X in df.columns else range(len(df)),
+                            x=x_data,
                             y=df[selected_column],
                             mode=style,
                             name=f'{selected_column}',
                             line=dict(color='blue')
                         ), secondary_y=False)
                         
-                        # Add correlated column (secondary y-axis)
+                        # Add correlated column (secondary y-axis) - from original df
                         fig.add_trace(go.Scattergl(
-                            x=df[X] if 'X' in locals() and X in df.columns else range(len(df)),
+                            x=x_data,
                             y=df[corr_column],
                             mode=style,
                             name=f'{corr_column}',
@@ -433,16 +440,16 @@ if data is not None:
                         ), secondary_y=True)
                     else:
                         fig.add_trace(go.Scatter(
-                            x=df[X] if 'X' in locals() and X in df.columns else range(len(df)),
+                            x=x_data,
                             y=df[selected_column],
                             mode=style,
                             name=f'{selected_column}',
                             line=dict(color='blue')
                         ), secondary_y=False)
                         
-                        # Add correlated column (secondary y-axis)
+                        # Add correlated column (secondary y-axis) - from original df
                         fig.add_trace(go.Scatter(
-                            x=df[X] if 'X' in locals() and X in df.columns else range(len(df)),
+                            x=x_data,
                             y=df[corr_column],
                             mode=style,
                             name=f'{corr_column}',
@@ -456,11 +463,7 @@ if data is not None:
                     )
                     fig.update_yaxes(title_text=f"<b>{selected_column}</b>", secondary_y=False)
                     fig.update_yaxes(title_text=f"<b>{corr_column}</b>", secondary_y=True)
-                    
-                    if 'X' in locals() and X in df.columns:
-                        fig.update_xaxes(title_text=X)
-                    else:
-                        fig.update_xaxes(title_text="Index")
+                    fig.update_xaxes(title_text=X_corr)
                     
                     st.plotly_chart(fig)
             else:
