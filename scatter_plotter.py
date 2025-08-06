@@ -399,7 +399,7 @@ if data is not None:
             # User inputs - X axis can be from original df (including dates), correlation analysis from numeric df
             X_corr = st.sidebar.selectbox('Choose X Axis for correlation plots:', df.columns)
             selected_column = st.sidebar.selectbox('Choose the main column for correlation analysis:', corr.columns)
-            num_correlations = st.sidebar.slider('Number of top correlations to show:', 1, min(50, len(corr.columns)-1), 10)
+            num_correlations = st.sidebar.slider('Number of top correlations to show:', 1, min(50, len(corr.columns)-1), 3)
             
             # Handle X axis data type conversion (from original df)
             if df[X_corr].dtype == 'datetime64[ns]' and k==True:
