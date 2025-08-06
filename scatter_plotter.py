@@ -34,6 +34,7 @@ with tab2:
             - One Chart with re-scaling: This option also plots multiple series on a single chart, but with re-scaling of data for better comparison.
             - Many charts: This option creates individual charts for each series.
             - Correlations: This option allows you to create a correlation matrix and plot a heatmap of the correlations.
+            - Column vs Top Correlations: This option lets you select a specific column and find its most highly correlated columns, then creates individual plots showing the selected column against each highly correlated column.
         4. The generated plots will be displayed in the middle of the screen. If the 'Remove outliers' checkbox is selected, the application will remove outliers from the data before plotting. The threshold for outlier removal can be adjusted using the slider.
         5. If your data contains a large number of points, check the 'Check this box if the data contains a large number of points' checkbox for better performance.
         """
@@ -119,7 +120,7 @@ if data is not None:
             st.write('dataset could not be outliers removed')
             pass
         
-    choice=st.sidebar.radio('Choose one of the following options :',['One chart','One Chart with re-scaling','Many charts','Correlations'])
+    choice=st.sidebar.radio('Choose one of the following options :',['One chart','One Chart with re-scaling','Many charts','Correlations','Column vs Top Correlations'])
     st.sidebar.write('======================================')
     if st.session_state['date_status']:
         style='lines+markers'
@@ -378,6 +379,94 @@ if data is not None:
             st.plotly_chart(fig)
 
 
+    if choice=='Column vs Top Correlations':
+        st.subheader('Column vs Top Correlations Analysis')
+        
+        # Create correlation matrix for all numeric columns
+        df_numeric = df.copy()
+        for column in df_numeric.columns:
+            if df_numeric[column].dtype == 'datetime64[ns]' and k==True:
+                pass
+            else:
+                df_numeric[column] = pd.to_numeric(df_numeric[column], errors='coerce')
+        
+        # Calculate correlation matrix
+        corr = df_numeric.corr()
+        
+        if corr.empty:
+            st.error("No numeric columns found for correlation analysis.")
+        else:
+            # User inputs
+            selected_column = st.sidebar.selectbox('Choose the main column for correlation analysis:', df_numeric.columns)
+            num_correlations = st.sidebar.slider('Number of top correlations to show:', 1, min(50, len(corr.columns)-1), 10)
+            
+            if selected_column in corr.columns:
+                # Find top correlations (excluding the column itself)
+                correlations = corr[selected_column].drop(labels=[selected_column]).dropna()
+                # Sort by absolute value to get strongest correlations (positive or negative)
+                top_correlations = correlations.reindex(correlations.abs().sort_values(ascending=False).index).head(num_correlations)
+                
+                st.write(f"**Top {num_correlations} correlations for '{selected_column}':**")
+                st.dataframe(top_correlations.to_frame(name='Correlation'))
+                
+                # Create individual plots
+                for i, (corr_column, corr_value) in enumerate(top_correlations.items()):
+                    fig = make_subplots(specs=[[{"secondary_y": True}]])
+                    
+                    # Add main column (primary y-axis)
+                    if gl==True:
+                        fig.add_trace(go.Scattergl(
+                            x=df[X] if 'X' in locals() and X in df.columns else range(len(df)),
+                            y=df[selected_column],
+                            mode=style,
+                            name=f'{selected_column}',
+                            line=dict(color='blue')
+                        ), secondary_y=False)
+                        
+                        # Add correlated column (secondary y-axis)
+                        fig.add_trace(go.Scattergl(
+                            x=df[X] if 'X' in locals() and X in df.columns else range(len(df)),
+                            y=df[corr_column],
+                            mode=style,
+                            name=f'{corr_column}',
+                            line=dict(color='red', dash='dot')
+                        ), secondary_y=True)
+                    else:
+                        fig.add_trace(go.Scatter(
+                            x=df[X] if 'X' in locals() and X in df.columns else range(len(df)),
+                            y=df[selected_column],
+                            mode=style,
+                            name=f'{selected_column}',
+                            line=dict(color='blue')
+                        ), secondary_y=False)
+                        
+                        # Add correlated column (secondary y-axis)
+                        fig.add_trace(go.Scatter(
+                            x=df[X] if 'X' in locals() and X in df.columns else range(len(df)),
+                            y=df[corr_column],
+                            mode=style,
+                            name=f'{corr_column}',
+                            line=dict(color='red', dash='dot')
+                        ), secondary_y=True)
+                    
+                    # Update layout
+                    fig.update_layout(
+                        title=f'{selected_column} vs {corr_column}<br>Correlation: {corr_value:.3f}',
+                        legend_title="Columns"
+                    )
+                    fig.update_yaxes(title_text=f"<b>{selected_column}</b>", secondary_y=False)
+                    fig.update_yaxes(title_text=f"<b>{corr_column}</b>", secondary_y=True)
+                    
+                    if 'X' in locals() and X in df.columns:
+                        fig.update_xaxes(title_text=X)
+                    else:
+                        fig.update_xaxes(title_text="Index")
+                    
+                    st.plotly_chart(fig)
+            else:
+                st.error(f"Column '{selected_column}' not found in correlation matrix.")
+
+
     st.sidebar.write('======================================')
-    st.sidebar.write('======================================')
+    st.sidebar.write('=======================================')
     
