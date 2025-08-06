@@ -9,6 +9,7 @@ from sklearn.preprocessing import MinMaxScaler
 import openpyxl
 import streamlit as st
 import scipy.stats as stats
+import matplotlib.pyplot as plt
 
 
 st.set_page_config("Simple scatter plotter",":chart_with_downwards_trend:")#,layout="wide",initial_sidebar_state="expanded")
@@ -400,6 +401,7 @@ if data is not None:
             X_corr = st.sidebar.selectbox('Choose X Axis for correlation plots:', df.columns)
             selected_column = st.sidebar.selectbox('Choose the main column for correlation analysis:', corr.columns)
             num_correlations = st.sidebar.slider('Number of top correlations to show:', 1, min(50, len(corr.columns)-1), 3)
+            plot_type = st.sidebar.radio('Choose plot type:', ['Dynamic (Plotly)', 'Static (Matplotlib)'], key='plot_type_corr')
             
             # Handle X axis data type conversion (from original df)
             if df[X_corr].dtype == 'datetime64[ns]' and k==True:
@@ -418,54 +420,97 @@ if data is not None:
                 
                 # Create individual plots using original df for plotting
                 for i, (corr_column, corr_value) in enumerate(top_correlations.items()):
-                    fig = make_subplots(specs=[[{"secondary_y": True}]])
                     
-                    # Add main column (primary y-axis) - from original df
-                    if gl==True:
-                        fig.add_trace(go.Scattergl(
-                            x=x_data,
-                            y=df[selected_column],
-                            mode=style,
-                            name=f'{selected_column}',
-                            line=dict(color='blue')
-                        ), secondary_y=False)
+                    if plot_type == 'Dynamic (Plotly)':
+                        # Plotly plots (existing code)
+                        fig = make_subplots(specs=[[{"secondary_y": True}]])
                         
-                        # Add correlated column (secondary y-axis) - from original df
-                        fig.add_trace(go.Scattergl(
-                            x=x_data,
-                            y=df[corr_column],
-                            mode=style,
-                            name=f'{corr_column}',
-                            line=dict(color='red', dash='dot')
-                        ), secondary_y=True)
-                    else:
-                        fig.add_trace(go.Scatter(
-                            x=x_data,
-                            y=df[selected_column],
-                            mode=style,
-                            name=f'{selected_column}',
-                            line=dict(color='blue')
-                        ), secondary_y=False)
+                        # Add main column (primary y-axis) - from original df
+                        if gl==True:
+                            fig.add_trace(go.Scattergl(
+                                x=x_data,
+                                y=df[selected_column],
+                                mode=style,
+                                name=f'{selected_column}',
+                                line=dict(color='blue')
+                            ), secondary_y=False)
+                            
+                            # Add correlated column (secondary y-axis) - from original df
+                            fig.add_trace(go.Scattergl(
+                                x=x_data,
+                                y=df[corr_column],
+                                mode=style,
+                                name=f'{corr_column}',
+                                line=dict(color='red', dash='dot')
+                            ), secondary_y=True)
+                        else:
+                            fig.add_trace(go.Scatter(
+                                x=x_data,
+                                y=df[selected_column],
+                                mode=style,
+                                name=f'{selected_column}',
+                                line=dict(color='blue')
+                            ), secondary_y=False)
+                            
+                            # Add correlated column (secondary y-axis) - from original df
+                            fig.add_trace(go.Scatter(
+                                x=x_data,
+                                y=df[corr_column],
+                                mode=style,
+                                name=f'{corr_column}',
+                                line=dict(color='red', dash='dot')
+                            ), secondary_y=True)
                         
-                        # Add correlated column (secondary y-axis) - from original df
-                        fig.add_trace(go.Scatter(
-                            x=x_data,
-                            y=df[corr_column],
-                            mode=style,
-                            name=f'{corr_column}',
-                            line=dict(color='red', dash='dot')
-                        ), secondary_y=True)
+                        # Update layout
+                        fig.update_layout(
+                            title=f'{selected_column} vs {corr_column}<br>Correlation: {corr_value:.3f}',
+                            legend_title="Columns"
+                        )
+                        fig.update_yaxes(title_text=f"<b>{selected_column}</b>", secondary_y=False)
+                        fig.update_yaxes(title_text=f"<b>{corr_column}</b>", secondary_y=True)
+                        fig.update_xaxes(title_text=X_corr)
+                        
+                        st.plotly_chart(fig)
                     
-                    # Update layout
-                    fig.update_layout(
-                        title=f'{selected_column} vs {corr_column}<br>Correlation: {corr_value:.3f}',
-                        legend_title="Columns"
-                    )
-                    fig.update_yaxes(title_text=f"<b>{selected_column}</b>", secondary_y=False)
-                    fig.update_yaxes(title_text=f"<b>{corr_column}</b>", secondary_y=True)
-                    fig.update_xaxes(title_text=X_corr)
-                    
-                    st.plotly_chart(fig)
+                    else:  # Static (Matplotlib)
+                        # Matplotlib plots
+                        fig, ax1 = plt.subplots(figsize=(10, 6))
+                        
+                        # Plot main column on primary y-axis
+                        color1 = 'tab:blue'
+                        ax1.set_xlabel(X_corr)
+                        ax1.set_ylabel(selected_column, color=color1)
+                        
+                        if style == 'lines+markers':
+                            ax1.plot(x_data, df[selected_column], color=color1, marker='o', linestyle='-', markersize=3, label=selected_column)
+                        else:
+                            ax1.scatter(x_data, df[selected_column], color=color1, s=20, label=selected_column)
+                        
+                        ax1.tick_params(axis='y', labelcolor=color1)
+                        
+                        # Create secondary y-axis for correlated column
+                        ax2 = ax1.twinx()
+                        color2 = 'tab:red'
+                        ax2.set_ylabel(corr_column, color=color2)
+                        
+                        if style == 'lines+markers':
+                            ax2.plot(x_data, df[corr_column], color=color2, marker='s', linestyle='--', markersize=3, label=corr_column)
+                        else:
+                            ax2.scatter(x_data, df[corr_column], color=color2, s=20, marker='s', label=corr_column)
+                        
+                        ax2.tick_params(axis='y', labelcolor=color2)
+                        
+                        # Title and layout
+                        plt.title(f'{selected_column} vs {corr_column}\nCorrelation: {corr_value:.3f}', fontsize=12)
+                        
+                        # Add legends
+                        lines1, labels1 = ax1.get_legend_handles_labels()
+                        lines2, labels2 = ax2.get_legend_handles_labels()
+                        ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper right')
+                        
+                        plt.tight_layout()
+                        st.pyplot(fig)
+                        plt.close()  # Close figure to free memory
             else:
                 st.error(f"Column '{selected_column}' not found in correlation matrix.")
 
