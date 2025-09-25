@@ -12,154 +12,611 @@ import scipy.stats as stats
 import matplotlib.pyplot as plt
 
 
-st.set_page_config("Simple scatter plotter",":chart_with_downwards_trend:")#,layout="wide",initial_sidebar_state="expanded")
+# Enhanced Page Configuration
+st.set_page_config(
+    page_title="📊 Advanced Scatter Plot Studio",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-st.title('Simple scatter plotter app')
-st.markdown('<p style="background-color:#f8f4f4;color:#6858c4;font-size:24px;border-radius:2%;">Just upload excel file and see great interactive plots</p>', unsafe_allow_html=True)
-st.header('=================================')
+# Custom CSS for stunning visuals
+st.markdown("""
+<style>
+    /* Main app styling */
+    .main > div {
+        padding-top: 2rem;
+    }
 
-tab1,tab2,tab3= st.tabs(["main app","How to run the app", " Video description of the app"])
+    /* Header styling */
+    .header-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        border-radius: 15px;
+        color: white;
+        text-align: center;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .header-title {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .header-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        font-weight: 300;
+    }
+
+    /* Card styling */
+    .info-card {
+        background: linear-gradient(145deg, #f0f4f8, #e2e8f0);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border-left: 5px solid #667eea;
+        margin: 1rem 0;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    /* Status indicators */
+    .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+        font-weight: 600;
+        margin: 0.25rem;
+    }
+
+    .status-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .status-warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+
+    .status-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+
+    /* Feature highlights */
+    .feature-highlight {
+        background: linear-gradient(45deg, #ff6b6b, #feca57);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    /* Step indicators */
+    .step-container {
+        display: flex;
+        align-items: center;
+        margin: 1rem 0;
+        padding: 1rem;
+        border-radius: 10px;
+        background: white;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .step-number {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+
+    .step-content {
+        flex: 1;
+    }
+
+    /* Sidebar styling */
+    .css-1d391kg {
+        background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+    }
+
+    /* Button styling */
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 0.5rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+
+    /* Tab styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: transparent;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        background: linear-gradient(135deg, #e2e8f0, #cbd5e0);
+        border-radius: 25px;
+        color: #4a5568;
+        font-weight: 600;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    /* Metric styling */
+    .metric-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border-top: 4px solid #667eea;
+        text-align: center;
+        margin: 0.5rem 0;
+    }
+
+    /* Error/Warning styling */
+    .stAlert {
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    /* Data frame styling */
+    .dataframe {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    /* Progress indicator */
+    .progress-container {
+        background: #f1f5f9;
+        border-radius: 10px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+
+    /* Custom selectbox and multiselect styling */
+    .stSelectbox > div > div {
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+
+    .stSelectbox > div > div:focus-within {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .stMultiSelect > div > div {
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+    }
+
+    .stMultiSelect > div > div:focus-within {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Enhanced Header
+st.markdown("""
+<div class="header-container">
+    <h1 class="header-title">📊 Advanced Scatter Plot Studio</h1>
+    <p class="header-subtitle">Transform your data into stunning interactive visualizations with just a few clicks</p>
+</div>
+""", unsafe_allow_html=True)
+
+# Enhanced Tabs with Icons
+tab1, tab2, tab3 = st.tabs(["🎯 Main App", "📋 Step-by-Step Guide", "🎥 Video Tutorial"])
 
 with tab1:
-    st.header("Display Area")
+    st.markdown("""
+    <div class="info-card">
+        <h2>🎨 Visualization Workspace</h2>
+        <p>Upload your data and create stunning interactive plots in seconds!</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    
 with tab2:
-    st.header("How to use")
-    st.markdown(
-        """
-        1. Start by uploading an Excel or CSV file. This can be done through the 'Upload your excel/csv file here' button located on the left sidebar. Ensure that your file contains a single sheet and the column names are defined in the first row.
-        2. If your data contains a 'DATE' column, make sure to check the 'Check this box if the data contains a DATE column' checkbox on the left sidebar.
-        3. Depending on your needs, you can choose one of the following options from the left sidebar:
-            - One chart: This option allows you to plot multiple series on a single chart. You can specify the series for the primary and secondary Y axes.
-            - One Chart with re-scaling: This option also plots multiple series on a single chart, but with re-scaling of data for better comparison.
-            - Many charts: This option creates individual charts for each series.
-            - Correlations: This option allows you to create a correlation matrix and plot a heatmap of the correlations.
-            - Column vs Top Correlations: This option lets you select a specific column and find its most highly correlated columns, then creates individual plots showing the selected column against each highly correlated column.
-        4. The generated plots will be displayed in the middle of the screen. If the 'Remove outliers' checkbox is selected, the application will remove outliers from the data before plotting. The threshold for outlier removal can be adjusted using the slider.
-        5. If your data contains a large number of points, check the 'Check this box if the data contains a large number of points' checkbox for better performance.
-        """
-    )
-    st.write(' Kindly note that all cells that are not numbers will be converted to empty cells')
-    
+    st.markdown("""
+    <div class="info-card">
+        <h2>🚀 Quick Start Guide</h2>
+        <p>Follow these simple steps to create amazing visualizations</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Step-by-step guide with visual indicators
+    steps = [
+        {
+            "number": "1",
+            "title": "📁 Upload Your Data",
+            "content": "Click the 'Upload your excel/csv file here' button in the sidebar. Make sure your file has column names in the first row and contains a single sheet.",
+            "tip": "Supported formats: Excel (.xlsx, .xls) and CSV files"
+        },
+        {
+            "number": "2",
+            "title": "📅 Configure Date Settings",
+            "content": "If your data contains date columns, check the 'DATE column' checkbox and select which column contains dates.",
+            "tip": "This ensures proper time-series visualization"
+        },
+        {
+            "number": "3",
+            "title": "🎯 Choose Your Visualization Type",
+            "content": "Select from 5 powerful chart types:",
+            "options": [
+                "📈 **One Chart**: Multiple series on single chart with dual Y-axes",
+                "📊 **Re-scaling Chart**: Normalized data for easy comparison",
+                "📋 **Multiple Charts**: Individual charts for each data series",
+                "🔥 **Correlation Heatmap**: Discover data relationships",
+                "⚡ **Top Correlations**: Find strongest correlations for any column"
+            ]
+        },
+        {
+            "number": "4",
+            "title": "🔧 Fine-tune Your Analysis",
+            "content": "Customize your visualization with advanced options:",
+            "options": [
+                "🎯 Remove outliers with adjustable thresholds",
+                "⚡ Optimize for large datasets",
+                "🎨 Choose columns and axes"
+            ]
+        },
+        {
+            "number": "5",
+            "title": "✨ View Your Results",
+            "content": "Your beautiful, interactive charts will appear in the main area. Hover, zoom, and explore your data!",
+            "tip": "All visualizations are fully interactive with Plotly"
+        }
+    ]
+
+    for step in steps:
+        st.markdown(f"""
+        <div class="step-container">
+            <div class="step-number">{step['number']}</div>
+            <div class="step-content">
+                <h3 style="margin: 0 0 0.5rem 0; color: #2d3748;">{step['title']}</h3>
+                <p style="margin: 0 0 0.5rem 0; color: #4a5568;">{step['content']}</p>
+                {"".join([f"<p style='margin: 0.25rem 0; color: #718096; font-size: 0.9rem;'>• {option}</p>" for option in step.get('options', [])])}
+                {f"<p style='margin-top: 0.5rem; padding: 0.5rem; background: #f7fafc; border-radius: 5px; color: #2b6cb0; font-size: 0.85rem;'><strong>💡 Tip:</strong> {step['tip']}</p>" if 'tip' in step else ""}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="info-card">
+        <h3>⚠️ Important Notes</h3>
+        <ul>
+            <li>📊 Non-numeric cells will be automatically converted to empty cells</li>
+            <li>📈 Date columns require proper formatting for time-series plots</li>
+            <li>⚡ For large datasets (>10k points), enable the large data option for better performance</li>
+            <li>🎯 Outlier removal uses statistical Z-score filtering</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
 
 with tab3:
-    st.markdown(" Check the video below")
+    st.markdown("""
+    <div class="info-card">
+        <h2>🎥 Video Tutorial</h2>
+        <p>Watch this comprehensive walkthrough to master all features</p>
+    </div>
+    """, unsafe_allow_html=True)
     st.video('https://youtu.be/W8CR1zD15l0')
 
 
 
 
-data= st.sidebar.file_uploader("Upload your excel/csv file here",type=['csv', 'xls', 'xlsx'],key='1')
+# Enhanced Sidebar
+st.sidebar.markdown("""
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+           padding: 1.5rem; margin: -1rem -1rem 2rem -1rem;
+           border-radius: 0 0 15px 15px; color: white; text-align: center;">
+    <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700;">🎛️ Control Panel</h2>
+    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Configure your visualization</p>
+</div>
+""", unsafe_allow_html=True)
 
+# Enhanced file upload section
+st.sidebar.markdown("### 📁 Data Upload")
+data = st.sidebar.file_uploader(
+    "Choose your file",
+    type=['csv', 'xls', 'xlsx'],
+    key='1',
+    help="Upload Excel (.xlsx, .xls) or CSV files. Make sure column names are in the first row."
+)
+
+# File processing with enhanced status indicators
 if data is not None:
-    try:
-        df_raw = pd.read_csv(data,encoding_errors='ignore')
-    except:
-        pass
-    try:
-        df_raw = pd.read_csv(data)
-    except:
-        pass
+    with st.spinner('🔄 Processing your file...'):
+        try:
+            df_raw = pd.read_csv(data, encoding_errors='ignore')
+        except:
+            try:
+                df_raw = pd.read_csv(data)
+            except:
+                try:
+                    df_raw = pd.read_excel(data)
+                except:
+                    try:
+                        df_raw = pd.read_excel(data, engine='openpyxl')
+                    except:
+                        st.sidebar.error("❌ Error reading file. Please check the format.")
 
-    try:
-        df_raw = pd.read_excel(data)
-    except:
-        pass
-    try:
-        df_raw=pd.read_excel(data,engine='openpyxl')
-    except:
-        pass
+    if 'df_raw' in locals():
+        st.sidebar.markdown("""
+        <div class="status-indicator status-success">
+            ✅ File loaded successfully!
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Display data summary
+        st.sidebar.markdown("### 📊 Data Summary")
+        st.sidebar.markdown(f"""
+        <div class="metric-card">
+            <h4 style="margin: 0; color: #667eea;">Dataset Info</h4>
+            <p style="margin: 0.5rem 0 0 0;"><strong>Rows:</strong> {df_raw.shape[0]:,}</p>
+            <p style="margin: 0.25rem 0 0 0;"><strong>Columns:</strong> {df_raw.shape[1]}</p>
+        </div>
+        """, unsafe_allow_html=True)
 else:
-    st.sidebar.write('*Kindly upload valid excel or csv data with one sheet and columns names are in the first raw')
+    st.sidebar.markdown("""
+    <div class="status-indicator status-warning">
+        ⚠️ Please upload a file to get started
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.sidebar.markdown("""
+    <div class="info-card">
+        <h4>📋 Requirements</h4>
+        <ul style="font-size: 0.9rem; margin: 0; padding-left: 1.2rem;">
+            <li>Excel (.xlsx, .xls) or CSV files</li>
+            <li>Single sheet only</li>
+            <li>Column names in first row</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
     
-try: 
-    st.dataframe(df_raw)
-except:
-    pass
+# Enhanced data display
+if 'df_raw' in locals():
+    with tab1:
+        st.markdown("### 📋 Your Data Preview")
+        with st.container():
+            # Show column info
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("📊 Total Rows", f"{df_raw.shape[0]:,}")
+            with col2:
+                st.metric("🏗️ Columns", df_raw.shape[1])
+            with col3:
+                st.metric("💾 Data Types", df_raw.dtypes.nunique())
+
+            # Enhanced dataframe display
+            st.markdown("#### 🔍 Data Sample")
+            st.dataframe(df_raw, height=400)
 
 try:
-    df=df_raw.copy()
+    df = df_raw.copy()
 except:
     pass
-st.sidebar.write('======================================')
 
+# Enhanced configuration section
 if data is not None:
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### ⚙️ Data Configuration")
 
-    k=st.sidebar.checkbox('Check this box if the data contains a DATE column',key='date_status')
-    if k :
-        date=st.sidebar.selectbox('Choose Date column',df.columns)
-        df[date]=pd.to_datetime(df[date])
-    gl=st.sidebar.checkbox('Check this box if the data contains large number of points',key='gl')
-    st.sidebar.write('======================================')
+    # Date column configuration with enhanced UI
+    k = st.sidebar.checkbox(
+        '📅 My data contains DATE columns',
+        key='date_status',
+        help="Enable this if your data has date/time columns for time-series plots"
+    )
+
+    if k:
+        st.sidebar.markdown("**Select Date Column:**")
+        date = st.sidebar.selectbox(
+            'Choose the date column',
+            df.columns,
+            help="This column will be used for time-series visualization"
+        )
+        df[date] = pd.to_datetime(df[date])
+
+        st.sidebar.markdown("""
+        <div class="status-indicator status-info">
+            📅 Date column configured
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Large dataset optimization
+    gl = st.sidebar.checkbox(
+        '⚡ Optimize for large datasets',
+        key='gl',
+        help="Enable this for datasets with >10,000 points for better performance"
+    )
+
+    if gl:
+        st.sidebar.markdown("""
+        <div class="status-indicator status-info">
+            ⚡ Large data optimization enabled
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.sidebar.markdown("---")
     
-    #outliers detection and removal
-    if st.checkbox('Remove outliers'):
-        st.markdown('#### Standard Deviation')
-        try:
-            df_new=df.copy()
-            for column in df_new.columns:
-                # Check if the column is numeric
-                df_new[column] = pd.to_numeric(df_new[column], errors='coerce')
-            #outlier function that is used in machine learning app   
-            outlier_limit=st.slider('Number of Standard deviations data will be filtered upon',1.0,10.0,4.0,0.2)
-            st.write(f'data initial raws are {df.shape[0]}')
-            def df_without_outliers (data,a=4.0):
-                df=data.copy()    
-                z_scores = stats.zscore(df[df.describe().columns],nan_policy='omit')
-                z_scores.fillna(0,inplace=True)   # in case one column is filled with nan values
-                abs_z_scores = np.abs(z_scores)
-                filtered_entries = (abs_z_scores < a).all(axis=1)
-                df_without_outliers = df[filtered_entries]
-                return df_without_outliers
-            df_new = df_without_outliers(df_new, a= outlier_limit)
-            df=df.loc[df_new.index]
-            st.write(f'data new raws are {df.shape[0]}')
-        except Exception as e:
-            st.write(f"An error occurred: {type(e).__name__}")
-            st.write(f"Error message: {e}")
-            st.write('dataset could not be outliers removed')
-            pass
+    # Enhanced outliers detection and removal
+    with tab1:
+        st.markdown("### 🔧 Data Preprocessing")
+        remove_outliers = st.checkbox(
+            '🎯 Remove outliers from data',
+            help="Filter out statistical outliers using Z-score analysis"
+        )
+
+        if remove_outliers:
+            st.markdown("#### 📊 Outlier Removal Configuration")
+
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                outlier_limit = st.slider(
+                    'Standard deviation threshold',
+                    min_value=1.0,
+                    max_value=10.0,
+                    value=4.0,
+                    step=0.2,
+                    help="Data points beyond this many standard deviations will be removed"
+                )
+
+            try:
+                df_new = df.copy()
+                for column in df_new.columns:
+                    df_new[column] = pd.to_numeric(df_new[column], errors='coerce')
+
+                with col2:
+                    st.markdown("**Before filtering:**")
+                    st.metric("📊 Rows", f"{df.shape[0]:,}")
+
+                def df_without_outliers(data, a=4.0):
+                    df = data.copy()
+                    z_scores = stats.zscore(df[df.describe().columns], nan_policy='omit')
+                    z_scores.fillna(0, inplace=True)
+                    abs_z_scores = np.abs(z_scores)
+                    filtered_entries = (abs_z_scores < a).all(axis=1)
+                    df_without_outliers = df[filtered_entries]
+                    return df_without_outliers
+
+                df_new = df_without_outliers(df_new, a=outlier_limit)
+                df = df.loc[df_new.index]
+
+                with col2:
+                    st.markdown("**After filtering:**")
+                    st.metric(
+                        "📊 Rows",
+                        f"{df.shape[0]:,}",
+                        delta=f"{df.shape[0] - df_raw.shape[0]:,}"
+                    )
+
+                # Show filtering effectiveness
+                removed_count = df_raw.shape[0] - df.shape[0]
+                removal_pct = (removed_count / df_raw.shape[0]) * 100
+
+                if removed_count > 0:
+                    st.success(f"✅ Successfully removed {removed_count:,} outliers ({removal_pct:.1f}%)")
+                else:
+                    st.info("ℹ️ No outliers detected with current threshold")
+
+            except Exception as e:
+                st.error(f"❌ Error during outlier removal: {str(e)}")
+                st.warning("⚠️ Proceeding with original dataset")
+
+        st.markdown("---")
         
-    choice=st.sidebar.radio('Choose one of the following options :',['One chart','One Chart with re-scaling','Many charts','Correlations','Column vs Top Correlations'])
-    st.sidebar.write('======================================')
+    # Enhanced chart type selection
+    st.sidebar.markdown("### 📈 Visualization Type")
+
+    # Chart type descriptions
+    chart_descriptions = {
+        'One chart': '📈 Multiple series on a single chart with dual Y-axes',
+        'One Chart with re-scaling': '📊 Normalized data for easy comparison across different scales',
+        'Many charts': '📋 Individual charts for each data series',
+        'Correlations': '🔥 Interactive correlation heatmap to discover relationships',
+        'Column vs Top Correlations': '⚡ Find and visualize strongest correlations for any column'
+    }
+
+    choice = st.sidebar.radio(
+        'Select visualization type:',
+        options=list(chart_descriptions.keys()),
+        format_func=lambda x: chart_descriptions[x],
+        help="Choose the type of visualization that best fits your analysis needs"
+    )
+
+    # Display selected choice info
+    st.sidebar.markdown(f"""
+    <div class="info-card">
+        <h4>Selected: {choice}</h4>
+        <p style="font-size: 0.9rem; margin: 0;">{chart_descriptions[choice]}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.sidebar.markdown("---")
+
+    # Determine plot style based on date status
     if st.session_state['date_status']:
-        style='lines+markers'
+        style = 'lines+markers'
+        st.sidebar.markdown("""
+        <div class="status-indicator status-info">
+            📈 Time-series mode (lines + markers)
+        </div>
+        """, unsafe_allow_html=True)
     else:
-        style='markers'
+        style = 'markers'
+        st.sidebar.markdown("""
+        <div class="status-indicator status-info">
+            📊 Scatter plot mode (markers only)
+        </div>
+        """, unsafe_allow_html=True)
 
     if choice=='One chart':
         X=st.sidebar.selectbox('Choose X Axis',df.columns)
         Y_1=st.sidebar.multiselect('Choose primary Y Axis',df.columns)
-        Y_2=st.sidebar.multiselect('Choose 2ndry Y Axis',df.columns) 
+        Y_2=st.sidebar.multiselect('Choose 2ndry Y Axis',df.columns)
         if df[X].dtype== 'datetime64[ns]' and k==True :
             pass
         else:
             df[X]=pd.to_numeric(df[X],errors='coerce')
-        for column in df[Y_1].columns:    
+        for column in Y_1:
             if df[column].dtype =='datetime64[ns]' and k==True:
                 pass
             else:
-                df[column]=pd.to_numeric(df[column],errors='coerce') 
-        for column in df[Y_2].columns:    
+                df[column]=pd.to_numeric(df[column],errors='coerce')
+        for column in Y_2:
             if df[column].dtype =='datetime64[ns]' and k==True:
                 pass
             else:
-                df[column]=pd.to_numeric(df[column],errors='coerce') 
+                df[column]=pd.to_numeric(df[column],errors='coerce')
         fig = make_subplots(specs=[[{"secondary_y": True}]])
         try:
-            for column in df[Y_1].columns:
+            for column in Y_1:
                 if gl==True:
                     fig.add_trace(go.Scattergl(x=df[X], y=df[column],mode=style, name=column)) # 1st y axis
-                else:    
+                else:
                     fig.add_trace(go.Scatter(x=df[X], y=df[column],mode=style, name=column)) # 1st y axis
         except:
             pass
         try:
-            for column in df[Y_2].columns:
+            for column in Y_2:
                 if gl==True:
                     fig.add_trace(go.Scattergl(x=df[X], y=(df[column]),mode=style, name=column), secondary_y=True) # 2nd y axis
-                else:                     
+                else:
                     fig.add_trace(go.Scatter(x=df[X], y=(df[column]),mode=style, name=column), secondary_y=True) # 2nd y axis
         except:
             pass
