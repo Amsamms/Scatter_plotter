@@ -424,7 +424,10 @@ if 'df_raw' in locals():
 
             # Enhanced dataframe display
             st.markdown("#### 🔍 Data Sample")
-            st.dataframe(df_raw, height=400)
+            try:
+                st.dataframe(df_raw, height=400)
+            except:
+                pass
 
 try:
     df = df_raw.copy()
